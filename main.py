@@ -1,37 +1,35 @@
-import discord
-import asyncio
-import os
+import discord, asyncio, os
 from discord.ext import commands
-
 intents = discord.Intents.default()
 intents.message_content = True
 intents.voice_states = True
-
+intents.guilds = True
 bot = commands.Bot(command_prefix="!", intents=intents)
-
-TOKEN = os.getenv("DISCORD_TOKEN")
-VOICE_CHANNEL_ID = 123456789012345678
 
 @bot.event
 async def on_ready():
-    print(f"MN ❤️ Ditaaa Bot Hidup! {bot.user}")
-    for guild in bot.guilds:
-        channel = guild.get_channel(VOICE_CHANNEL_ID)
-        if channel and isinstance(channel, discord.VoiceChannel):
-            try:
-                await channel.connect()
-                print(f"Udah join VC: {channel.name}")
-            except:
-                pass
+    print(f"MN Ditaaa hidup: {bot.user}")
+
+@bot.command()
+async def join(ctx):
+    if ctx.author.voice:
+        await ctx.author.voice.channel.connect()
+        await ctx.send("💖 MN udah join VC buat Ditaaa!")
+    else:
+        await ctx.send("Join VC dulu Jhon!")
+
+@bot.command()
+async def leave(ctx):
+    if ctx.voice_client:
+        await ctx.voice_client.disconnect()
 
 @bot.event
-async def on_voice_state_update(member, before, after):
-    if member.id == bot.user.id and before.channel and not after.channel:
+async def on_voice_state_update(m, b, a):
+    if m.id == bot.user.id and b.channel and not a.channel:
         await asyncio.sleep(2)
-        channel = before.channel.guild.get_channel(before.channel.id)
         try:
-            await channel.connect()
+            await b.channel.connect()
         except:
             pass
 
-bot.run(TOKEN)
+bot.run(os.getenv("DISCORD_TOKEN"))
